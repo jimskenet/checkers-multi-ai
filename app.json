@@ -4,7 +4,7 @@
     "slug": "checkers-multi-ai",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/checkers.png",
+    "icon":"./assets/images/checkers.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
@@ -18,8 +18,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/checkers.png",
-        "backgroundColor": "#1B1B1B"
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundColor": "#f0f0f0"
       },
       "package": "com.jimskenet.checkersmultiai"
     },
@@ -33,10 +33,10 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/checkers.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#f7d78f"
         }
       ],
       "expo-font"
