@@ -7,7 +7,7 @@
     "icon": "./assets/images/checkers.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
-    "splash":{
+    "splash": {
       "image": "./assets/images/checkers.png",
       "resizeMode": "cover",
       "backgroundColor": "#f7d78f"
@@ -20,7 +20,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/checkers.png",
         "backgroundColor": "#1B1B1B"
-      }
+      },
+      "package": "com.jimskenet.checkersmultiai"
     },
     "web": {
       "bundler": "metro",
@@ -37,10 +38,19 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "b49d3166-add0-466c-91ee-187eb2e896a6"
+      }
     }
   }
 }

@@ -1,43 +1,72 @@
-import { View, Text, StyleSheet, ImageBackground } from 'react-native'
+import { View, Text, StyleSheet, Image, Pressable, SafeAreaView } from 'react-native'
 import React from 'react'
 import { Link } from 'expo-router'
+import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 const app = () => {
   return (
-    <View style = {styles.container}>
-      <ImageBackground
-        source={require('@/assets/images/checkers.png')}
-        resizeMode='cover'
-        style={styles.image}
-        >
-      <Text style = {styles.title}>Checkers</Text>
-      <Link href="/explore" style = {styles.link}>Explore</Link>
-      </ImageBackground>
-    </View>
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.safeContainer}>
+        <View style = {styles.container}>
+          <Image style = {styles.logo} source={require('@/assets/images/checkers.png')}/>
+          <Text style = {styles.title}>CHECKERS</Text>
+          
+          <Link href="/board" style = {{marginHorizontal: 'auto'}} 
+          asChild>
+            <Pressable style={styles.button}>
+              <Text style={styles.buttonText}>SINGLEPLAYER</Text>
+            </Pressable>
+          </Link>
+
+          <Link href="/multiplayer-menu" style = {{marginHorizontal: 'auto'}} 
+          asChild>
+            <Pressable style={styles.button}>
+              <Text style={styles.buttonText}>MULTIPLAYER</Text>
+            </Pressable>
+          </Link>
+
+        </View>
+      </SafeAreaView>
+    </SafeAreaProvider>
   )
 }
 
 export default app
 
 const styles = StyleSheet.create({
-  container:{
-    flex: 1,
-    flexDirection: 'column',
+  safeContainer:{
+    flex:1
   },
-  image:{
-    width: '100%',
-    height: '100%',
+  container: {
     flex: 1,
-    resizeMode: 'cover',
+    backgroundColor: "#F7D78F",
+    justifyContent: "center", 
+    alignItems: "center", 
+  },
+  footer: {
+    width: wp(100),
+    height: 60, 
+    backgroundColor: "rgba(0,0,0,0.75)",
+    justifyContent: "center",
+    alignItems: "center",
+    position:'absolute',
+    bottom:0
+  },
+  logo:{
+    width: wp(40),
+    height: hp(40),
+    resizeMode: 'contain',
     justifyContent: 'center',
   },
   title:{
-    color: 'white',
+    color: '#33333',
     fontSize: 42,
     fontWeight: 'bold',
+    fontFamily: 'Baloo',
     textAlign: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    marginBottom: 120,
+    marginTop: hp(-8),
+    marginBottom: hp(10),
   },
   link:{
     color: 'white',
@@ -46,6 +75,21 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     textDecorationLine: 'underline',
     backgroundColor: 'rgba(0,0,0,0.5)',
+    padding: 4,
+  },
+  button:{
+    height: 60,
+    width: wp(75),
+    borderRadius: 20,
+    backgroundColor: 'rgba(0,0,0,0.75)',
+    padding: 6,
+    margin: 10
+  },
+  buttonText:{
+    color: 'white',
+    fontSize: hp(4),
+    fontWeight: 'bold',
+    textAlign: 'center',
     padding: 4,
   },
 })
