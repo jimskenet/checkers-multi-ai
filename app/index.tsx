@@ -9,7 +9,7 @@ const app = () => {
     <SafeAreaProvider>
       <SafeAreaView style={styles.safeContainer}>
         <View style = {styles.container}>
-          <Image style = {styles.logo} source={require('@/assets/images/checkers.png')}/>
+          <Image style = {styles.logo} source={require('@/assets/images/logo.png')}/>
           <Text style = {styles.title}>CHECKERS</Text>
           
           <Link href="/board" style = {{marginHorizontal: 'auto'}} 
@@ -19,7 +19,7 @@ const app = () => {
             </Pressable>
           </Link>
 
-          <Link href="/multiplayer-menu" style = {{marginHorizontal: 'auto'}} 
+          <Link href="/multiplayer" style = {{marginHorizontal: 'auto'}} 
           asChild>
             <Pressable style={styles.button}>
               <Text style={styles.buttonText}>MULTIPLAYER</Text>

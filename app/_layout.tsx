@@ -31,8 +31,8 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
-        {/* <Stack.Screen name="(tabs)" options={{ headerShown: false }} /> */}
         <Stack.Screen name ="index" options={{title: 'Main Menu', headerShown: false}}/>
+        {/* <Stack.Screen name ="multiplayer" options={{headerShown: false}}/> */}
         <Stack.Screen name ="board" options={{title: 'Play Now'}}/>
         <Stack.Screen name="+not-found" />
       </Stack>

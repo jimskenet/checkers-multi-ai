@@ -4,7 +4,7 @@
     "slug": "checkers-multi-ai",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon":"./assets/images/checkers.png",
+    "icon":"./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
@@ -26,7 +26,7 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/icon.png"
     },
     "plugins": [
       "expo-router",

@@ -9,7 +9,6 @@ const BLACK = "black";
 const RED = "red";
 const GREEN_HIGHLIGHT = "rgba(0, 255, 0, 0.5)";
 
-
 const boardSize = wp(90); // Board takes 90% of screen width
 const cellSize = boardSize / BOARD_SIZE; // Each cell is 1/8th of the board
 
