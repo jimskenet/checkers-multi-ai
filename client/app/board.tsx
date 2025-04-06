@@ -42,38 +42,53 @@ const CheckersBoard = () => {
   };
 
   return (
-    <ImageBackground style={styles.imageBg} source={require('../assets/images/wooden-bg.jpg')}>
-    <View style={styles.board}>      
-      {board.map((row, rowIndex) => (
-        <View key={rowIndex} style={styles.row}>
-          {row.map((cell, colIndex) => {
-            const isDark = (rowIndex + colIndex) % 2 === 1;
-            const isValidMove = validMoves.some(([r, c]) => r === rowIndex && c === colIndex);
-            return (
-              <TouchableOpacity
-                key={colIndex}
-                style={[styles.cell, { backgroundColor: isDark ? DARK_BROWN : LIGHT_BROWN }, isValidMove && styles.validMove]}
-                onPress={() => handlePress(rowIndex, colIndex)}
-              >
-                {cell && <View style={[styles.piece, { backgroundColor: cell }]} />}
-              </TouchableOpacity>
-            );
-          })}
+    <View style={styles.background}>
+      <View style={styles.boardoutline}>
+        <View style={styles.board}>
+          {board.map((row, rowIndex) => (
+            <View key={rowIndex} style={styles.row}>
+              {row.map((cell, colIndex) => {
+                const isDark = (rowIndex + colIndex) % 2 === 1;
+                const isValidMove = validMoves.some(([r, c]) => r === rowIndex && c === colIndex);
+                return (
+                  <TouchableOpacity
+                    key={colIndex}
+                    style={[
+                      styles.cell,
+                      { backgroundColor: isDark ? DARK_BROWN : LIGHT_BROWN },
+                      isValidMove && styles.validMove
+                    ]}
+                    onPress={() => handlePress(rowIndex, colIndex)}
+                  >
+                    {cell && <View style={[styles.piece, { backgroundColor: cell }]} />}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          ))}
         </View>
-      ))}
-      
+      </View>
     </View>
-    </ImageBackground>
-  );
+  );  
 };
 
 const styles = StyleSheet.create({
+  background:{
+    flex: 1, 
+    backgroundColor: "#F6E8B1", 
+    justifyContent: 'center', 
+    alignItems: 'center' 
+  },
+  boardoutline:{ 
+    backgroundColor: "#6C360F", 
+    padding: 10, 
+    borderRadius: 10 
+  },
   board: {
     width: boardSize,
     height: boardSize,
     flexDirection: "column",
     alignSelf: "center",
-    marginTop: hp(25)
   },
   imageBg:{
     height: hp(100),
