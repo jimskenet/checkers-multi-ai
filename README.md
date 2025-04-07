@@ -50,4 +50,5 @@ Join our community of developers creating universal apps.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
 
 # Credits
-- https://www.flaticon.com/free-icons/checkers" Checkers icons created by Freepik - Flaticon
+- https://www.flaticon.com/free-icons/checkers: Checkers icons created by Freepik - Flaticon
+- https://github.com/techwithtim/Python-Checkers-AI: Minimax Algorithm Logic
