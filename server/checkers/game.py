@@ -1,17 +1,10 @@
-import pygame
-from .constants import RED, WHITE, BLUE, SQUARE_SIZE
 from checkers.board import Board
+from .constants import RED, WHITE, BLUE, SQUARE_SIZE
 
 class Game:
-    def __init__(self, win):
+    def __init__(self):
         self._init()
-        self.win = win
     
-    def update(self):
-        self.board.draw(self.win)
-        self.draw_valid_moves(self.valid_moves)
-        pygame.display.update()
-
     def _init(self):
         self.selected = None
         self.board = Board()
@@ -52,11 +45,6 @@ class Game:
 
         return True
 
-    def draw_valid_moves(self, moves):
-        for move in moves:
-            row, col = move
-            pygame.draw.circle(self.win, BLUE, (col * SQUARE_SIZE + SQUARE_SIZE//2, row * SQUARE_SIZE + SQUARE_SIZE//2), 15)
-
     def change_turn(self):
         self.valid_moves = {}
         if self.turn == RED:
@@ -64,9 +52,25 @@ class Game:
         else:
             self.turn = RED
 
-    def get_board(self):
-        return self.board
-
     def ai_move(self, board):
         self.board = board
         self.change_turn()
+
+    def get_game_state(self):
+        return {
+            "board": self.board.serialized,         # pieces and their properties
+            "turn": self.turn,                      # whose turn
+            "selected_piece": self._piece_to_json(self.selected),
+            "valid_moves": list(self.valid_moves.keys()),   # valid move positions
+            "winner": self.board.winner()
+        }
+
+    def _piece_to_json(self, piece):
+        if piece is None:
+            return None
+        return {
+            "row": piece.row,
+            "col": piece.col,
+            "color": piece.color,
+            "king": piece.king
+        }

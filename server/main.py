@@ -1,47 +1,34 @@
-# Assets: https://techwithtim.net/wp-content/uploads/2020/09/assets.zip
-import pygame
-from checkers.constants import WIDTH, HEIGHT, SQUARE_SIZE, RED, WHITE
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 from checkers.game import Game
-from minimax.algorithm import minimax
 
-FPS = 60
+app = Flask(__name__)
+CORS(app)
+game = Game()
 
-WIN = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption('Checkers')
+@app.route('/state', methods=['GET'])
+def get_game_state():
+    return jsonify(game.get_game_state())
 
-def get_row_col_from_mouse(pos):
-    x, y = pos
-    row = y // SQUARE_SIZE
-    col = x // SQUARE_SIZE
-    return row, col
+@app.route('/select', methods=['POST'])
+def select_piece():
+    data = request.get_json()
+    row = data.get('row')
+    col = data.get('col')
+    success = game.select(row, col)
+    return jsonify({
+        "success": success,
+        "state": game.get_game_state()
+    })
 
-def main():
-    run = True
-    clock = pygame.time.Clock()
-    game = Game(WIN)
+@app.route('/reset', methods=['POST'])
+def reset_game():
+    global game
+    game = Game()
+    return jsonify({
+        "message": "Game reset.",
+        "state": game.get_game_state()
+    })
 
-    while run:
-        clock.tick(FPS)
-        
-        if game.turn == WHITE:
-            value, new_board = minimax(game.get_board(), 4, WHITE, game)
-            game.ai_move(new_board)
-
-        if game.winner() != None:
-            print(game.winner())
-            run = False
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-            
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                pos = pygame.mouse.get_pos()
-                row, col = get_row_col_from_mouse(pos)
-                game.select(row, col)
-
-        game.update()
-    
-    pygame.quit()
-
-main()
+if __name__ == '__main__':
+    app.run(host='127.0.0.1', port=5000)
