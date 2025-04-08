@@ -1,19 +1,13 @@
-import pygame
 from .constants import BLACK, ROWS, RED, SQUARE_SIZE, COLS, WHITE
 from .piece import Piece
 
 class Board:
     def __init__(self):
         self.board = []
+        self.serialized = []
         self.red_left = self.white_left = 12
         self.red_kings = self.white_kings = 0
         self.create_board()
-    
-    def draw_squares(self, win):
-        win.fill(BLACK)
-        for row in range(ROWS):
-            for col in range(row % 2, COLS, 2):
-                pygame.draw.rect(win, RED, (row*SQUARE_SIZE, col *SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
     def evaluate(self):
         return self.white_left - self.red_left + (self.white_kings * 0.5 - self.red_kings * 0.5)
@@ -36,7 +30,8 @@ class Board:
                 self.white_kings += 1
             else:
                 self.red_kings += 1 
-
+        self._update_serialized()
+        
     def get_piece(self, row, col):
         return self.board[row][col]
 
@@ -53,14 +48,23 @@ class Board:
                         self.board[row].append(0)
                 else:
                     self.board[row].append(0)
-        
-    def draw(self, win):
-        self.draw_squares(win)
-        for row in range(ROWS):
-            for col in range(COLS):
-                piece = self.board[row][col]
-                if piece != 0:
-                    piece.draw(win)
+        self._update_serialized()
+    
+    def _update_serialized(self):
+        """Internal method to update the serialized version of the board."""
+        serialized = []
+        for row in self.board:
+            serialized_row = []
+            for piece in row:
+                if piece == 0:
+                    serialized_row.append({"color": None})
+                else:
+                    serialized_row.append({
+                        "color": piece.color,
+                        "king": piece.king
+                    })
+            serialized.append(serialized_row)
+        self.serialized = serialized
 
     def remove(self, pieces):
         for piece in pieces:
@@ -70,7 +74,8 @@ class Board:
                     self.red_left -= 1
                 else:
                     self.white_left -= 1
-    
+        self._update_serialized()
+        
     def winner(self):
         if self.red_left <= 0:
             return WHITE
@@ -159,3 +164,4 @@ class Board:
             right += 1
         
         return moves
+    
