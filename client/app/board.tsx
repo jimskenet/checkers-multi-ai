@@ -17,39 +17,34 @@ const cellSize = boardSize / BOARD_SIZE; // Each cell is 1/8th of the board
 
 let userTurn: boolean = true;
 
-async function selectPiece(row: number, col: number) {
-  const res = await axios.post('http://127.0.0.1:5000/select', { row, col });
-  console.log(res.data);
-  return res.data;
-}
+  async function selectPiece(row: number, col: number) {
+    const res = await axios.post('http://192.168.100.70:5000/select', { row, col });
+    console.log(res.data);
+    return res.data;
+  }  
 
-async function getState() {
-  const res = await axios.get('http://127.0.0.1:5000/state');
-  return res.data;
-}
-
-async function resetGame() {
-  const res = await axios.post('http://127.0.0.1:5000/reset');
-  return res.data;
-}
-
+  async function resetGame() {
+    const res = await axios.post('http://192.168.100.70:5000/reset');
+    return res.data;
+  }
+  
 const initialBoard = (state: any) => {
   const board = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null));
-
+  
   for (let row = 0; row < BOARD_SIZE; row++) {
     for (let col = 0; col < BOARD_SIZE; col++) {
       if ((row + col) % 2 === 1) {
         const cellColor = state?.[row]?.[col]?.color;
         const isKing = state?.[row]?.[col]?.king;
 
-        if (cellColor === "WHITE") {
+        if (cellColor === "WHITE") {    
           board[row][col] = isKing ? WHITE_KING : WHITE;
         } else if (cellColor === "BLACK") {
           board[row][col] = isKing ? BLACK_KING : BLACK;
         }
       }
     }
-  }
+  } 
 
   return board;
 };
@@ -58,14 +53,18 @@ const CheckersBoard = () => {
   const [board, setBoard] = useState<any[]>([]);
   const [validMoves, setValidMoves] = useState<[number, number][]>([]);
 
-  // Fetch initial state when the component is mounted
-  useEffect(() => {
-    const fetchState = async () => {
-      const state = await getState();
+  const fetchBoard = async () => {
+    try {
+      const res = await axios.get('http://192.168.100.70:5000/state');
+      const state = res.data.board;
       setBoard(initialBoard(state));
-    };
+    } catch (error) {
+      console.error('Failed to fetch board:', error);
+    }
+  };
 
-    fetchState();
+  useEffect(() => {
+    fetchBoard();
   }, []);
 
   const handlePress = (row: number, col: number) => {
@@ -84,11 +83,14 @@ const CheckersBoard = () => {
     selectPiece(row, col);
   };
 
-  const handleReset = async () => {
-    await resetGame();
-    const state = await getState();
-    setBoard(initialBoard(state));
-  };
+   const handleReset = async () => {
+    try {
+      await resetGame(); // 🔄 Ask server to reset
+      fetchBoard();       // 📥 Fetch fresh board after reset
+    } catch (error) {
+      console.error('Failed to reset game:', error);
+    }
+   };
 
   return (
     <View style={styles.background}>
@@ -126,7 +128,7 @@ const CheckersBoard = () => {
                   >
                     {cell && <View style={[styles.piece, { backgroundColor: cell }]} />}
                   </TouchableOpacity>
-                );
+                );  
               })}
             </View>
           ))}
