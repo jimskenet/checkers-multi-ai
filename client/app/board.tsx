@@ -72,14 +72,21 @@ const CheckersBoard = () => {
     try {
       const res = await selectPiece(row, col);  // Call the selectPiece function from backend
       const state = res.state;  // The state returned by the backend, including the valid moves
-  
+      
+      if (!res.success) {
+        console.warn("Invalid selection or move.");
+        // If the selection is invalid, reset valid moves
+        setValidMoves([]);
+        return;
+      }
+      
       // Update the board
       setBoard(initialBoard(state.board));
   
       // Update valid moves
       const moves = state.valid_moves;
       if (moves) {
-        const formattedMoves = moves.map((move: any) => [move[0], move[1]]); // Ensure it's formatted correctly as an array of [row, col]
+        const formattedMoves = moves.map((move: any) => [move[0], move[1]]);
         setValidMoves(formattedMoves);
       } else {
         setValidMoves([]);
