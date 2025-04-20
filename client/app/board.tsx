@@ -28,26 +28,27 @@ let userTurn: boolean = true;
     return res.data;
   }
   
-const initialBoard = (state: any) => {
-  const board = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null));
+  const initialBoard = (state: any[][]) => {
+    const board = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null));
   
-  for (let row = 0; row < BOARD_SIZE; row++) {
-    for (let col = 0; col < BOARD_SIZE; col++) {
-      if ((row + col) % 2 === 1) {
-        const cellColor = state?.[row]?.[col]?.color;
-        const isKing = state?.[row]?.[col]?.king;
-
-        if (cellColor === "WHITE") {    
+    for (let row = 0; row < BOARD_SIZE; row++) {
+      for (let col = 0; col < BOARD_SIZE; col++) {
+        const cell = state?.[row]?.[col];
+        if (!cell) continue;
+  
+        const color = cell.color;
+        const isKing = cell.king;
+  
+        if (color === "WHITE") {
           board[row][col] = isKing ? WHITE_KING : WHITE;
-        } else if (cellColor === "BLACK") {
+        } else if (color === "BLACK") {
           board[row][col] = isKing ? BLACK_KING : BLACK;
         }
       }
     }
-  } 
-
-  return board;
-};
+  
+    return board;
+  };  
 
 const CheckersBoard = () => {
   const [board, setBoard] = useState<any[]>([]);
@@ -67,21 +68,26 @@ const CheckersBoard = () => {
     fetchBoard();
   }, []);
 
-  const handlePress = (row: number, col: number) => {
-    userTurn = !userTurn;
-    // Example logic to highlight valid moves (dummy logic for now)
-    if (board[row][col]) {
-      setValidMoves([
-        [row + 1, col - 1],
-        [row + 1, col + 1],
-      ]);
-    } else {
-      setValidMoves([]);
+  const handlePress = async (row: number, col: number) => {
+    try {
+      const res = await selectPiece(row, col);  // Call the selectPiece function from backend
+      const state = res.state;  // The state returned by the backend, including the valid moves
+  
+      // Update the board
+      setBoard(initialBoard(state.board));
+  
+      // Update valid moves
+      const moves = state.valid_moves;
+      if (moves) {
+        const formattedMoves = moves.map((move: any) => [move[0], move[1]]); // Ensure it's formatted correctly as an array of [row, col]
+        setValidMoves(formattedMoves);
+      } else {
+        setValidMoves([]);
+      }
+    } catch (error) {
+      console.error('Error selecting piece:', error);
     }
-
-    // Send selected piece to backend
-    selectPiece(row, col);
-  };
+  };  
 
    const handleReset = async () => {
     try {

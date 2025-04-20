@@ -1,5 +1,4 @@
 from checkers.board import Board
-from .constants import RED, WHITE, BLUE, SQUARE_SIZE
 
 class Game:
     def __init__(self):
@@ -8,7 +7,7 @@ class Game:
     def _init(self):
         self.selected = None
         self.board = Board()
-        self.turn = RED
+        self.turn = "WHITE"
         self.valid_moves = {}
 
     def winner(self):
@@ -47,10 +46,10 @@ class Game:
 
     def change_turn(self):
         self.valid_moves = {}
-        if self.turn == RED:
-            self.turn = WHITE
+        if self.turn == "BLACK":
+            self.turn = "WHITE"
         else:
-            self.turn = RED
+            self.turn = "BLACK"
 
     def ai_move(self, board):
         self.board = board
@@ -58,10 +57,10 @@ class Game:
 
     def get_game_state(self):
         return {
-            "board": self.board.serialized,         # pieces and their properties
-            "turn": self.turn,                      # whose turn
+            "board": self.board.serialized,         
+            "turn": self.turn,                      
             "selected_piece": self._piece_to_json(self.selected),
-            "valid_moves": list(self.valid_moves.keys()),   # valid move positions
+            "valid_moves": list(self.valid_moves.keys()),
             "winner": self.board.winner()
         }
 
