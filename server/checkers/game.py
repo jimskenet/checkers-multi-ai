@@ -1,15 +1,21 @@
 from checkers.board import Board
+import time
 
 class Game:
     def __init__(self):
         self._init()
     
-    def _init(self):
+    def __init__(self):
         self.selected = None
         self.board = Board()
         self.turn = "WHITE"
         self.valid_moves = {}
-
+        self.time_left = {
+            "WHITE": 300, 
+            "BLACK": 300
+        }
+        self.turn_start_time = time.time()
+        
     def winner(self):
         return self.board.winner()
 
@@ -46,10 +52,18 @@ class Game:
 
     def change_turn(self):
         self.valid_moves = {}
+        
+        elapsed_time = time.time() - self.turn_start_time
+        time_left = self.time_left[self.turn] - int(elapsed_time)
+        
+        self.time_left[self.turn] = max(time_left, 0)
+        
         if self.turn == "BLACK":
             self.turn = "WHITE"
         else:
             self.turn = "BLACK"
+            
+        self.turn_start_time = time.time() 
 
     def ai_move(self, board):
         self.board = board
@@ -60,8 +74,9 @@ class Game:
             "board": self.board.serialized,         
             "turn": self.turn,                      
             "selected_piece": self._piece_to_json(self.selected),
-            "valid_moves": list(self.valid_moves.keys()),
-            "winner": self.board.winner()
+            "valid_moves": list(self.valid_moves.keys()), 
+            "winner": self.board.winner(),
+            "time_left": self.time_left
         }
 
     def _piece_to_json(self, piece):
