@@ -108,15 +108,25 @@ export class Board {
     // If there are capture moves globally, only return capture moves for this piece
     if (hasCaptureMove) {
       const captureMoves: MoveMap = {};
-      
+    
+      // First, determine the maximum number of pieces this piece can capture in one move
+      let maxCaptures = 0;
+    
+      for (const capturedPieces of Object.values(allMoves)) {
+        if (capturedPieces.length > maxCaptures) {
+          maxCaptures = capturedPieces.length;
+        }
+      }
+    
+      // Then, keep only the moves that result in the max number of captures
       for (const [moveKey, capturedPieces] of Object.entries(allMoves)) {
-        if (capturedPieces.length > 0) {
+        if (capturedPieces.length === maxCaptures && maxCaptures > 0) {
           captureMoves[moveKey] = capturedPieces;
         }
       }
-      
+    
       return captureMoves;
-    }
+    }    
     
     // If no captures required globally, return all valid moves
     return allMoves;
@@ -160,39 +170,39 @@ export class Board {
     return false;
   }
 
-  // Get all valid moves for all pieces of a color, enforcing global capture rule
-  get_all_valid_moves(color: Color): Record<string, MoveMap> {
-    const pieces = this.get_all_pieces(color);
-    let allMoves: Record<string, MoveMap> = {};
+  // // Get all valid moves for all pieces of a color, enforcing global capture rule
+  // get_all_valid_moves(color: Color): Record<string, MoveMap> {
+  //   const pieces = this.get_all_pieces(color);
+  //   let allMoves: Record<string, MoveMap> = {};
     
-    // Check if any piece has a capture move
-    const hasCaptureMove = this.has_capture_move(color);
+  //   // Check if any piece has a capture move
+  //   const hasCaptureMove = this.has_capture_move(color);
     
-    for (const piece of pieces) {
-      // Get all possible moves for this piece
-      const pieceMoves = this._get_all_moves(piece);
-      let validMoves: MoveMap = {};
+  //   for (const piece of pieces) {
+  //     // Get all possible moves for this piece
+  //     const pieceMoves = this._get_all_moves(piece);
+  //     let validMoves: MoveMap = {};
       
-      // If captures are mandatory globally, only include capture moves
-      if (hasCaptureMove) {
-        for (const [moveKey, capturedPieces] of Object.entries(pieceMoves)) {
-          if (capturedPieces.length > 0) {
-            validMoves[moveKey] = capturedPieces;
-          }
-        }
-      } else {
-        // No captures required, include all moves
-        validMoves = pieceMoves;
-      }
+  //     // If captures are mandatory globally, only include capture moves
+  //     if (hasCaptureMove) {
+  //       for (const [moveKey, capturedPieces] of Object.entries(pieceMoves)) {
+  //         if (capturedPieces.length > 0) {
+  //           validMoves[moveKey] = capturedPieces;
+  //         }
+  //       }
+  //     } else {
+  //       // No captures required, include all moves
+  //       validMoves = pieceMoves;
+  //     }
       
-      // Only add this piece to the results if it has valid moves
-      if (Object.keys(validMoves).length > 0) {
-        allMoves[`${piece.row},${piece.col}`] = validMoves;
-      }
-    }
+  //     // Only add this piece to the results if it has valid moves
+  //     if (Object.keys(validMoves).length > 0) {
+  //       allMoves[`${piece.row},${piece.col}`] = validMoves;
+  //     }
+  //   }
     
-    return allMoves;
-  }
+  //   return allMoves;
+  // }
 
   private _traverse_left(
     start: number,
