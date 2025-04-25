@@ -1,86 +1,68 @@
-import React, { useState, useEffect, useRef, startTransition } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import axios from 'axios';
 import styles, { BOARD_SIZE, WHITE, BLACK, DARK_BROWN, LIGHT_BROWN } from './styles/styles';
-import { API_ENDPOINTS } from '../apiConfig';
+import Game from './game/game';
 
-  async function selectPiece(row: number, col: number) {
-    const res = await axios.post(API_ENDPOINTS.SELECT, { row, col });
-    console.log(res.data);
-    return res.data;
-  }  
+const game = new Game();
 
-  async function resetGame() {  
-    const res = await axios.post(API_ENDPOINTS.RESET);
-    return res.data;
+const formatTime = (seconds: number) => {
+  const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+  const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
+};
+
+const initialBoard = (state: any[][]) => {
+  const board = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null));
+
+  for (let row = 0; row < BOARD_SIZE; row++) {
+    for (let col = 0; col < BOARD_SIZE; col++) {
+      const cell = state?.[row]?.[col];
+      if (cell.color === null) continue;
+      const { color, king } = cell;
+
+      board[row][col] = {
+        color: color === "WHITE" ? WHITE : BLACK,
+        isKing: king
+      };
+    }
   }
 
-  const formatTime = (seconds: number) => {
-    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
-    const s = Math.floor(seconds % 60).toString().padStart(2, '0');
-    return `${m}:${s}`;
-  };
-  
-  const initialBoard = (state: any[][]) => {
-    const board = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null));
-   
-    for (let row = 0; row < BOARD_SIZE; row++) {
-      for (let col = 0; col < BOARD_SIZE; col++) {
-        const cell = state?.[row]?.[col];
-        if (!cell) continue;
-  
-        const { color, king: isKing } = cell;
-
-        if (color === "WHITE" || color === "BLACK") {
-          board[row][col] = {
-            color: color === "WHITE" ? WHITE : BLACK,
-            isKing: isKing
-          };
-        }
-      }
-    }
-  
-    return board;
-  };  
+  return board;
+};
 
 const CheckersBoard = () => {
-  const [board, setBoard] = useState<any[]>([]);
+  const [board, setBoard] = useState<any[][]>([]);
   const [validMoves, setValidMoves] = useState<[number, number][]>([]);
   const [timeLeft, setTimeLeft] = useState<{ WHITE: number, BLACK: number }>({ WHITE: 300, BLACK: 300 });
   const [currentPlayer, setCurrentPlayer] = useState<"WHITE" | "BLACK">("WHITE");
-  
+
   const currentPlayerRef = useRef(currentPlayer);
   currentPlayerRef.current = currentPlayer;
 
   useEffect(() => {
     const interval = setInterval(() => {
       setTimeLeft(prev => {
-        const player = currentPlayerRef.current;        
+        const player = currentPlayerRef.current;
         const newTime = { ...prev };
-  
+
         if (newTime[player] > 0) {
           newTime[player] -= 1;
         }
-  
+
         return newTime;
       });
     }, 1000);
-  
+
     return () => clearInterval(interval);
   }, []);
 
-  // Fetch the game state (including remaining time)
   const fetchBoard = async () => {
     try {
-      const res = await axios.get(API_ENDPOINTS.STATE);
-      const state = res.data;
-
-      // Set the initial timer values and other game data
-      setTimeLeft(state.time_left);  // Remaining time for both players
-      setCurrentPlayer(state.turn);  // Set the current player's turn
-      setBoard(initialBoard(state.board)); // Set the board state
-
+      const state = game.get_game_state();
+      setTimeLeft(state.time_left);
+      setCurrentPlayer(state.turn);
+      setBoard(initialBoard(state.board));
     } catch (error) {
       console.error('Failed to fetch board:', error);
     }
@@ -90,51 +72,45 @@ const CheckersBoard = () => {
     fetchBoard();
   }, []);
 
-  const handlePress = async (row: number, col: number) => {
+  const handlePress = (row: number, col: number) => {
     try {
-      const res = await selectPiece(row, col); 
-      const state = res.state;  
+      const res = game.select(row, col);
+      const state = game.get_game_state();
 
-      if(state.winner != null){
-        try{
+      if (state.winner != null) {
         console.log(`Winner is ${state.winner}!`);
-        await resetGame();
+        game.reset();
         fetchBoard();
-        }
-        catch(error){
-          console.warn("Something is wrong");
-        }
+        return;
       }
 
       setBoard(initialBoard(state.board));
-
-      if (state.turn === "BLACK") setCurrentPlayer("BLACK");
-      else setCurrentPlayer("WHITE");
-
-      if (!res.success) {
+      setCurrentPlayer(state.turn);
+      
+      if (!res) {
         console.warn("No piece or invalid move.");
         setValidMoves([]);
         return;
-      } 
-      
+      }
+
       const moves = state.valid_moves;
       if (moves) {
-        const formattedMoves = moves.map((move: any) => [move[0], move[1]]);
-        setValidMoves(formattedMoves);  
-      } 
-    } catch (error) {   
+        const formattedMoves = moves.map(([r, c]) => [r, c] as [number, number]);
+        setValidMoves(formattedMoves);
+      }
+    } catch (error) {
       console.error('Error selecting piece:', error);
     }
-  };      
+  };
 
-   const handleReset = async () => {
+  const handleReset = () => {
     try {
-      await resetGame(); // 🔄 Ask server to reset
-      fetchBoard();       // 📥 Fetch fresh board after reset
+      game.reset();
+      fetchBoard();
     } catch (error) {
       console.error('Failed to reset game:', error);
     }
-   };
+  };
 
   return (
     <View style={styles.background}>
@@ -151,7 +127,7 @@ const CheckersBoard = () => {
       }]}>
         <View style={styles.timer}>
           <Text style={styles.timerText}>
-            {formatTime(timeLeft[currentPlayer])} 
+            {formatTime(timeLeft[currentPlayer])}
           </Text>
         </View>
       </View>
@@ -159,7 +135,7 @@ const CheckersBoard = () => {
         <View style={styles.board}>
           {board.map((row, rowIndex) => (
             <View key={rowIndex} style={styles.row}>
-               {row.map((cell: { color: string, isKing: boolean } | null, colIndex: number) => {
+              {row.map((cell, colIndex) => {
                 const isDark = (rowIndex + colIndex) % 2 === 1;
                 const isValidMove = validMoves.some(([r, c]) => r === rowIndex && c === colIndex);
                 return (
@@ -172,15 +148,14 @@ const CheckersBoard = () => {
                     ]}
                     onPress={() => handlePress(rowIndex, colIndex)}
                   >
-                    {cell && (
+                    {cell && (  
                       cell.isKing ? (
                         <Image
                           source={
                             cell.color === WHITE
                               ? require('../assets/images/crown-white.png')
-                              // : require('../assets/images/checkers-king-black.png')
                               : require('../assets/images/crown-black.png')
-                            }
+                          }
                           style={[styles.piece, { backgroundColor: cell.color }]}
                         />
                       ) : (
@@ -188,7 +163,7 @@ const CheckersBoard = () => {
                       )
                     )}
                   </TouchableOpacity>
-                );  
+                );
               })}
             </View>
           ))}
