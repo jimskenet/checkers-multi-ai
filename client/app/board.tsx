@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import styles, { BOARD_SIZE, WHITE, BLACK, DARK_BROWN, LIGHT_BROWN } from './styles/styles';
+import styles, { BOARD_SIZE, WHITE, BLACK, DARK_BROWN, LIGHT_BROWN } from './styles/board_styles';
 import Game from './game/game';
 
 const game = new Game();
@@ -86,7 +86,7 @@ const CheckersBoard = () => {
 
       setBoard(initialBoard(state.board));
       setCurrentPlayer(state.turn);
-      
+
       if (!res) {
         console.warn("No piece or invalid move.");
         setValidMoves([]);
