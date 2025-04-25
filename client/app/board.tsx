@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, startTransition } from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import axios from 'axios';
@@ -24,7 +24,7 @@ import { API_ENDPOINTS } from '../apiConfig';
   
   const initialBoard = (state: any[][]) => {
     const board = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null));
-  
+   
     for (let row = 0; row < BOARD_SIZE; row++) {
       for (let col = 0; col < BOARD_SIZE; col++) {
         const cell = state?.[row]?.[col];
@@ -50,18 +50,25 @@ const CheckersBoard = () => {
   const [timeLeft, setTimeLeft] = useState<{ WHITE: number, BLACK: number }>({ WHITE: 300, BLACK: 300 });
   const [currentPlayer, setCurrentPlayer] = useState<"WHITE" | "BLACK">("WHITE");
   
+  const currentPlayerRef = useRef(currentPlayer);
+  currentPlayerRef.current = currentPlayer;
+
   useEffect(() => {
     const interval = setInterval(() => {
-      if (timeLeft[currentPlayer] > 0) {
-        setTimeLeft((prevTimeLeft) => ({
-          ...prevTimeLeft,
-          [currentPlayer]: prevTimeLeft[currentPlayer] - 1,
-        }));
-      }
-    }, 1000); // Decrement every second
-
-    return () => clearInterval(interval); // Clean up interval when the component is unmounted or changes
-  }, [currentPlayer, timeLeft]);
+      setTimeLeft(prev => {
+        const player = currentPlayerRef.current;        
+        const newTime = { ...prev };
+  
+        if (newTime[player] > 0) {
+          newTime[player] -= 1;
+        }
+  
+        return newTime;
+      });
+    }, 1000);
+  
+    return () => clearInterval(interval);
+  }, []);
 
   // Fetch the game state (including remaining time)
   const fetchBoard = async () => {
@@ -86,27 +93,36 @@ const CheckersBoard = () => {
   const handlePress = async (row: number, col: number) => {
     try {
       const res = await selectPiece(row, col); 
-      const state = res.state;
+      const state = res.state;  
+
+      if(state.winner != null){
+        try{
+        console.log(`Winner is ${state.winner}!`);
+        await resetGame();
+        fetchBoard();
+        }
+        catch(error){
+          console.warn("Something is wrong");
+        }
+      }
 
       setBoard(initialBoard(state.board));
+
       if (state.turn === "BLACK") setCurrentPlayer("BLACK");
       else setCurrentPlayer("WHITE");
 
       if (!res.success) {
-        console.warn("Invalid selection or move.");
-        // If the selection is invalid, reset valid moves
+        console.warn("No piece or invalid move.");
         setValidMoves([]);
         return;
-      }
+      } 
       
       const moves = state.valid_moves;
       if (moves) {
         const formattedMoves = moves.map((move: any) => [move[0], move[1]]);
-        setValidMoves(formattedMoves);
-      } else {
-        setValidMoves([]);
-      }
-    } catch (error) {
+        setValidMoves(formattedMoves);  
+      } 
+    } catch (error) {   
       console.error('Error selecting piece:', error);
     }
   };      
@@ -135,7 +151,7 @@ const CheckersBoard = () => {
       }]}>
         <View style={styles.timer}>
           <Text style={styles.timerText}>
-            {formatTime(timeLeft[currentPlayer])}
+            {formatTime(timeLeft[currentPlayer])} 
           </Text>
         </View>
       </View>

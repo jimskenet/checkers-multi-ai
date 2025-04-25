@@ -22,7 +22,7 @@ const styles = StyleSheet.create({
     boardOutline: {
       backgroundColor: "#6C360F",
       padding: 10,
-      borderRadius: 10
+      borderRadius: 10  
     },
     board: {
       width: boardSize,

@@ -77,7 +77,7 @@ class Board:
         
     def winner(self):
         if self.black_left <= 0:
-            return WHITE
+            return "WHITE"
         elif self.white_left <= 0:
             return "BLACK"
         
@@ -96,7 +96,8 @@ class Board:
             moves.update(self._traverse_left(row +1, min(row+3, ROWS), 1, piece.color, left))
             moves.update(self._traverse_right(row +1, min(row+3, ROWS), 1, piece.color, right))
     
-        return moves
+        capture_moves = {move: skipped for move, skipped in moves.items() if skipped}
+        return capture_moves if capture_moves else moves
 
     def _traverse_left(self, start, stop, step, color, left, skipped=[]):
         moves = {}
@@ -114,7 +115,7 @@ class Board:
                 else:
                     moves[(r, left)] = last
                 
-                if last:
+                if last:    
                     if step == -1:
                         row = max(r-3, 0)
                     else:
