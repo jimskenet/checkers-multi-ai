@@ -3,6 +3,8 @@ import { View, Text, TouchableOpacity, Image } from "react-native";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import styles, { BOARD_SIZE, WHITE, BLACK, DARK_BROWN, LIGHT_BROWN } from './styles/board_styles';
 import Game from './game/game';
+import { useGameSettings } from './game/gameSettingsContext';
+import { minimax } from './game/minimax/algorithm';
 
 const game = new Game();
 
@@ -40,6 +42,10 @@ const CheckersBoard = () => {
   const currentPlayerRef = useRef(currentPlayer);
   currentPlayerRef.current = currentPlayer;
 
+  const { gameMode, playerColor, difficulty } = useGameSettings();
+  
+  console.log('Current settings:', gameMode, playerColor, difficulty);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setTimeLeft(prev => {
@@ -57,12 +63,32 @@ const CheckersBoard = () => {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    if (game) {
+      // Reset and initialize game with current settings
+      game.reset();
+      fetchBoard();
+      console.log('Initializing board with settings:', {
+        gameMode,
+        playerColor,
+        currentPlayer
+      });
+    }
+  }, [gameMode, playerColor]); // Dependencies include gameMode and playerColor
+
   const fetchBoard = async () => {
     try {
       const state = game.get_game_state();
       setTimeLeft(state.time_left);
       setCurrentPlayer(state.turn);
       setBoard(initialBoard(state.board));
+      
+      // Debug log to track state changes
+      console.log('Board fetched with settings:', {
+        gameMode,
+        playerColor,
+        currentPlayer: state.turn
+      });
     } catch (error) {
       console.error('Failed to fetch board:', error);
     }
@@ -74,6 +100,12 @@ const CheckersBoard = () => {
 
   const handlePress = (row: number, col: number) => {
     try {
+      // In singleplayer, only allow moves when it's player's turn
+      if (gameMode === 'singleplayer' && currentPlayer !== playerColor) {
+        console.log("Not your turn - waiting for AI");
+        return;
+      }
+
       const res = game.select(row, col);
       const state = game.get_game_state();
 
@@ -106,11 +138,62 @@ const CheckersBoard = () => {
   const handleReset = () => {
     try {
       game.reset();
-      fetchBoard();
+      fetchBoard(); 
     } catch (error) {
       console.error('Failed to reset game:', error);
     }
   };
+
+  const getDifficultyDepth = (difficulty: string) => {
+    switch(difficulty) {
+      case 'easy': return 2;
+      case 'medium': return 3;
+      case 'hard': return 4;
+      default: return 3;
+    }
+  };
+
+  const handleAIMove = () => {
+    if (gameMode === 'singleplayer' && currentPlayer !== playerColor) {
+      console.log("AI is thinking...");
+      
+      const aiTimeout = setTimeout(() => {
+        try {
+          const currentBoard = game.get_board();
+          const state = game.get_game_state();
+          if (state.winner != null) {
+            console.log(`Winner is ${state.winner}!`);
+            game.reset();
+            fetchBoard();
+            return;
+          }
+          
+          const isMaximizing = true;
+          const aiColor = playerColor === "WHITE" ? "BLACK" : "WHITE";
+          const depth = getDifficultyDepth(difficulty);
+          const [score, newBoard] = minimax(currentBoard, depth, isMaximizing, aiColor);
+          
+          if (newBoard) {
+            game.ai_move(newBoard);
+            fetchBoard();
+            console.log("AI moved with score:", score);
+          } else {
+            console.error("AI couldn't find a valid move: Surrending!");
+            console.log(`Winner is ${playerColor}!`);
+            game.reset();
+          }
+        } catch (error) {
+          console.error("Error during AI move:", error);
+        }
+      }, 500);
+
+      return () => clearTimeout(aiTimeout);
+    }
+  };
+
+  useEffect(() => {
+    handleAIMove(); // Trigger AI move if it's the AI's turn
+  }, [currentPlayer]);
 
   return (
     <View style={styles.background}>
@@ -141,21 +224,15 @@ const CheckersBoard = () => {
                 return (
                   <TouchableOpacity
                     key={colIndex}
-                    style={[
-                      styles.cell,
-                      { backgroundColor: isDark ? DARK_BROWN : LIGHT_BROWN },
-                      isValidMove && styles.validMove
-                    ]}
+                    style={[styles.cell, { backgroundColor: isDark ? DARK_BROWN : LIGHT_BROWN }, isValidMove && styles.validMove]}
                     onPress={() => handlePress(rowIndex, colIndex)}
                   >
-                    {cell && (  
+                    {cell && (
                       cell.isKing ? (
                         <Image
-                          source={
-                            cell.color === WHITE
-                              ? require('../assets/images/crown-white.png')
-                              : require('../assets/images/crown-black.png')
-                          }
+                          source={cell.color === WHITE
+                            ? require('../assets/images/crown-white.png')
+                            : require('../assets/images/crown-black.png')}
                           style={[styles.piece, { backgroundColor: cell.color }]}
                         />
                       ) : (

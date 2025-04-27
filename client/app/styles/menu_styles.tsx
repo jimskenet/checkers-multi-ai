@@ -32,6 +32,7 @@ const styles = StyleSheet.create({
       fontWeight: 'bold',
       fontFamily: 'Baloo',
       textAlign: 'center',
+      // alignItems: 'center',
       marginTop: hp(-8),
       marginBottom: hp(10),
     },

@@ -1,35 +1,43 @@
-  import { View, Text, Image, Pressable, SafeAreaView } from 'react-native'
-  import React from 'react'
-  import { Link } from 'expo-router'
-  import styles from './styles/menu_styles';
-  import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { View, Text, Image, Pressable } from 'react-native';
+import { Link } from 'expo-router';
+import styles from './styles/menu_styles';
+import { useGameSettings } from './game/gameSettingsContext';
 
-  const app = () => {
-    return (
-      <SafeAreaProvider>    
-        <SafeAreaView style={styles.safeContainer}>
-          <View style = {styles.container}>
-            <Image style = {styles.logo} source={require('@/assets/images/logo.png')}/>
-            <Text style = {styles.title}>CHECKERS</Text>
-            
-            <Link href="/board" style = {{marginHorizontal: 'auto'}} 
-            asChild>
-              <Pressable style={styles.button}>
-                <Text style={styles.buttonText}>SINGLEPLAYER</Text>
-              </Pressable>
-            </Link>
+const MenuContent = () => {
+  const { setGameSettings } = useGameSettings();
+  const randomColor = Math.random() > 0.5 ? 'WHITE' : 'BLACK';
 
-            <Link href="/multiplayer" style = {{marginHorizontal: 'auto'}} 
-            asChild>
-              <Pressable style={styles.button}>
-                <Text style={styles.buttonText}>MULTIPLAYER</Text>
-              </Pressable>
-            </Link>
+  return (
+    <View style={styles.container}>
+      <Image style={styles.logo} source={require('@/assets/images/logo.png')}/>
+      <Text style={styles.title}>CHECKERS</Text>
+      
+      <Link
+        href="/difficulty"
+        asChild
+        onPress={() => {
+          console.log('Navigating to difficulty selection');
+        }}
+      > 
+        <Pressable style={styles.button}>
+          <Text style={styles.buttonText}>SINGLEPLAYER</Text>
+        </Pressable>
+      </Link>
 
-          </View>
-        </SafeAreaView>
-      </SafeAreaProvider>
-    )
-  }
+      <Link 
+        href="/multiplayer" 
+        asChild
+        onPress={() => {
+          setGameSettings('multiplayer', 'WHITE');
+          console.log('Starting multiplayer game');
+        }}
+      >
+        <Pressable style={styles.button}>
+          <Text style={styles.buttonText}>MULTIPLAYER</Text>
+        </Pressable>
+      </Link>
+    </View>
+  );
+};
 
-  export default app;
+export default MenuContent;

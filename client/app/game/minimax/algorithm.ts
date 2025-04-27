@@ -1,83 +1,83 @@
-import { Board } from '../board';
+import board from '../board';
 import Piece, { Color } from '../piece';
-import { cloneDeep } from 'lodash'; // for deep copy (install lodash if needed)
+import { cloneDeep } from 'lodash';
 
-// Constants for players
-const RED: Color = 'BLACK';
+const BLACK: Color = 'BLACK';
 const WHITE: Color = 'WHITE';
 
-// Minimax algorithm for AI
 export function minimax(
-  position: Board,
+  position: board,
   depth: number,
-  maxPlayer: boolean
-): [number, Board] {
-  const winner = position.winner();
-  if (depth === 0 || winner !== null) {
+  maxPlayer: boolean,
+  aiColor: Color = WHITE // Default for backward compatibility, but should be passed in
+): [number, board | null] {
+  if (depth === 0 || position.winner() !== null) {
     return [position.evaluate(), position];
   }
 
+  const currentPlayerColor = maxPlayer 
+    ? aiColor 
+    : (aiColor === WHITE ? BLACK : WHITE);
+    
   if (maxPlayer) {
     let maxEval = -Infinity;
-    let bestMove: Board | null = null;
+    let bestMove: board | null = null;
+    const moves = getAllMoves(position, currentPlayerColor);
 
-    const moves = getAllMoves(position, WHITE);
     for (const move of moves) {
-      const evaluation = minimax(move, depth - 1, false)[0];
+      const evaluation = minimax(move, depth - 1, false, aiColor)[0];
       if (evaluation > maxEval) {
         maxEval = evaluation;
         bestMove = move;
       }
     }
 
-    return [maxEval, bestMove!];
+    return [maxEval, bestMove];
   } else {
     let minEval = Infinity;
-    let bestMove: Board | null = null;
+    let bestMove: board | null = null;
+    const moves = getAllMoves(position, currentPlayerColor);
 
-    const moves = getAllMoves(position, RED);
     for (const move of moves) {
-      const evaluation = minimax(move, depth - 1, true)[0];
+      const evaluation = minimax(move, depth - 1, true, aiColor)[0];
       if (evaluation < minEval) {
         minEval = evaluation;
         bestMove = move;
       }
     }
 
-    return [minEval, bestMove!];
+    return [minEval, bestMove];
   }
 }
 
-// Simulate a move on a temporary board
 function simulateMove(
   piece: Piece,
   move: [number, number],
-  board: Board,
-  skip: Piece[] | undefined
-): Board {
+  board: board,
+  skip: Piece[]
+): board {
   board.move(piece, move[0], move[1]);
-  if (skip) {
+  if (skip.length > 0) {
     board.remove(skip);
   }
   return board;
 }
 
-// Get all possible boards after making every valid move
-function getAllMoves(board: Board, color: Color): Board[] {
-  const moves: Board[] = [];
+function getAllMoves(board: board, color: Color): board[] {
+  const moves: board[] = [];
   const pieces = board.get_all_pieces(color);
 
   for (const piece of pieces) {
     const validMoves = board.get_valid_moves(piece);
-
+    
     for (const [moveStr, skip] of Object.entries(validMoves)) {
-      const [row, col] = moveStr.split(',').map(Number);
-
-      const tempBoard = cloneDeep(board);
-      const tempPiece = tempBoard.get_piece(piece.row, piece.col);
+      const tempboard = cloneDeep(board);
+      const tempPiece = tempboard.get_piece(piece.row, piece.col);
+      
       if (tempPiece) {
-        const newBoard = simulateMove(tempPiece, [row, col], tempBoard, skip);
-        moves.push(newBoard);
+        const [row, col] = moveStr.split(',').map(Number);
+        const newboard = simulateMove(tempPiece, [row, col], tempboard, skip);
+        moves.push(newboard);
       }
     }
   }

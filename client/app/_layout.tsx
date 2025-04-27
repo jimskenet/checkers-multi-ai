@@ -5,6 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
+import { GameSettingsProvider } from './game/gameSettingsContext';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -30,13 +31,14 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name ="index" options={{title: 'Main Menu', headerShown: false}}/>
-        {/* <Stack.Screen name ="multiplayer" options={{headerShown: false}}/> */}
-        <Stack.Screen name ="board" options={{title: 'Play Now'}}/>
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
+      <GameSettingsProvider>
+        <Stack>
+          <Stack.Screen name="index" options={{title: 'Main Menu', headerShown: false}}/>
+          <Stack.Screen name="board" options={{title: 'Play Now'}}/>
+          <Stack.Screen name="+not-found" />
+        </Stack>
+        <StatusBar style="auto" />
+      </GameSettingsProvider>
     </ThemeProvider>
   );
 }

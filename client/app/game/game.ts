@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { Board } from './board';
 import { Piece, Color } from './piece';
 
@@ -96,6 +97,10 @@ export class Game {
     this.change_turn();
   }
 
+  get_board(): Board {
+    return this.board;
+  }
+  
   get_game_state(): GameState {
     return {
       board: this.board.serialized,
