@@ -43,13 +43,13 @@ const formatTime = (seconds: number) => {
 
 // Replace the global game instance with a ref
 const CheckersBoard = () => {
-  const gameRef = useRef<Game>(null);
+  const gameRef = useRef<Game>(undefined);
   const { gameMode, playerColor, turnDuration, difficulty } = useGameSettings();
   
   // Initialize game with selected duration
   useEffect(() => {
     if (!gameRef.current) {
-      (gameRef.current as Game | null) = new Game(turnDuration!);
+      (gameRef.current as Game | undefined) = new Game(turnDuration!);
     } else {
       gameRef.current.reset(turnDuration);
     }
@@ -92,7 +92,7 @@ const CheckersBoard = () => {
               setWinner(timeoutWinner);
               setwinModal(true);
               if (gameRef.current) {
-                gameRef.current.reset(turnDuration);
+                gameRef.current.pause();
                 fetchBoard();
               }
             }
@@ -261,6 +261,35 @@ const CheckersBoard = () => {
     }
   };
 
+  // Add cleanup effect when component unmounts
+  useEffect(() => {
+    return () => {
+      // Clear game instance
+      if (gameRef.current) {
+        gameRef.current.clear();
+        gameRef.current = undefined;
+      }
+      // Reset states
+      setTimeLeft({ WHITE: turnDuration, BLACK: turnDuration });
+      setBoard([]);
+      setValidMoves([]);
+      setCurrentPlayer("WHITE");
+      setwinModal(false);
+      setpauseModal(false);
+      setWinner("WHITE");
+    };
+  }, []);
+
+  // Modify your menu button press handler
+  const handleMenuPress = () => {
+    if (gameRef.current) {
+      gameRef.current.clear();
+      gameRef.current = undefined;
+    }
+    setpauseModal(false);
+    require('expo-router').router.push('/');
+  };
+
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.safeContainer}>
@@ -280,11 +309,7 @@ const CheckersBoard = () => {
               }}>
                 <Pressable
                   style={[styles.button, styles.buttonResume]}
-                  onPress={() => {
-                    gameRef.current!.clear();
-                    setpauseModal(false);
-                    require('expo-router').router.push('/');
-                  }}
+                  onPress={handleMenuPress}
                 >
                   <Text style={styles.textStyle}>MENU</Text>
                 </Pressable>

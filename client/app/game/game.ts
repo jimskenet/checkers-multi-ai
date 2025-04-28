@@ -61,10 +61,14 @@ export class Game {
   }
 
   clear(): void {
-    this.time_left = { 
-      WHITE: -1, 
-      BLACK: -1
-    };
+    this.selected = null;
+    this.board = new Board();
+    this.turn = "WHITE";
+    this.valid_moves = {};
+    this._isPaused = false;
+    this.turn_start_time = Date.now() / 1000;
+    // Reset time_left to initial state
+    this.time_left = { WHITE: 300, BLACK: 300 };
   }
 
   select(row: number, col: number): boolean {
