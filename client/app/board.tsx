@@ -9,7 +9,6 @@ import { Modal } from "@/components/Modal";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { SafeAreaProvider } from "react-native-safe-area-context";
-const game = new Game();
 
 const formatTime = (seconds: number) => {
   const m = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -42,10 +41,29 @@ const formatTime = (seconds: number) => {
     return board;
   };
 
+// Replace the global game instance with a ref
 const CheckersBoard = () => {
+  const gameRef = useRef<Game>(null);
+  const { gameMode, playerColor, turnDuration, difficulty } = useGameSettings();
+  
+  // Initialize game with selected duration
+  useEffect(() => {
+    if (!gameRef.current) {
+      (gameRef.current as Game | null) = new Game(turnDuration);
+    } else {
+      gameRef.current.reset(turnDuration);
+    }
+    fetchBoard();
+  }, [turnDuration]);
+
+  // Update timeLeft state initialization
+  const [timeLeft, setTimeLeft] = useState<{ WHITE: number, BLACK: number }>({ 
+    WHITE: turnDuration, 
+    BLACK: turnDuration 
+  });
+
   const [board, setBoard] = useState<any[][]>([]);
   const [validMoves, setValidMoves] = useState<[number, number][]>([]);
-  const [timeLeft, setTimeLeft] = useState<{ WHITE: number, BLACK: number }>({ WHITE: 300, BLACK: 300 });
   const [currentPlayer, setCurrentPlayer] = useState<"WHITE" | "BLACK">("WHITE");
   const [winModal, setwinModal] = useState(false);
   const [pauseModal, setpauseModal] = useState(false);
@@ -54,12 +72,9 @@ const CheckersBoard = () => {
   const currentPlayerRef = useRef(currentPlayer);
   currentPlayerRef.current = currentPlayer;
 
-  const { gameMode, playerColor, difficulty } = useGameSettings();
-  const aiColor = playerColor === "WHITE" ? "BLACK" : "WHITE";
+  const aiColor = playerColor === "WHITE" ? "BLACK" : "WHITE";  
   
-  console.log('Current settings:', gameMode, playerColor, difficulty);
-
-  useEffect(() => {
+  useEffect(() => { 
     // Only start the interval if the game is not paused
     if (!pauseModal) {
       const interval = setInterval(() => {
@@ -81,9 +96,9 @@ const CheckersBoard = () => {
   }, [pauseModal]); // Add pauseModal to dependencies
 
   useEffect(() => {
-    if (game) {
+    if (gameRef.current) {
       // Reset and initialize game with current settings
-      game.reset();
+      gameRef.current.reset();
       fetchBoard();
       console.log('Initializing board with settings:', {
         gameMode,
@@ -95,27 +110,22 @@ const CheckersBoard = () => {
 
   const fetchBoard = async () => {
     try {
-      const state = game.get_game_state();
-
-      if(state.winner != null){  
+      const state = gameRef.current?.get_game_state();
+      if (!state) return;
+  
+      if(state.winner != null) {
         console.log(`Winner is ${state.winner}!`);
         setWinner(state.winner);
         setwinModal(true);
-        game.reset();
+        gameRef.current?.reset(turnDuration);
         fetchBoard();
         return;
       }
-
+  
       setTimeLeft(state.time_left);
       setCurrentPlayer(state.turn);
       setBoard(initialBoard(state.board, playerColor));
       
-      console.log('Board fetched with settings:', {
-        gameMode,
-        playerColor,
-        currentPlayer: state.turn,
-        orientation: playerColor === 'BLACK' ? 'normal' : 'reversed'
-      });
     } catch (error) {
       console.error('Failed to fetch board:', error);
     } 
@@ -136,14 +146,14 @@ const CheckersBoard = () => {
         return;
       }
 
-      const res = game.select(actualRow, actualCol);
-      const state = game.get_game_state();
+      const res = gameRef.current!.select(actualRow, actualCol);
+      const state = gameRef.current!.get_game_state();
 
       if (state.winner != null) {
         fetchBoard();
         return;
       }
-
+      
       setBoard(initialBoard(state.board, playerColor));
       setCurrentPlayer(state.turn);
 
@@ -168,9 +178,10 @@ const CheckersBoard = () => {
     }
   };
 
+  // Update handleReset to use the current turnDuration
   const handleReset = () => {
     try {
-      game.reset();
+      gameRef.current?.reset(turnDuration);
       fetchBoard(); 
     } catch (error) {
       console.error('Failed to reset game:', error);
@@ -191,7 +202,7 @@ const CheckersBoard = () => {
       
       const aiTimeout = setTimeout(() => {
         try {
-          const currentBoard = game.get_board();
+          const currentBoard = gameRef.current!.get_board();
           
           const isMaximizing = aiColor === currentPlayer;;
           const depth = getDifficultyDepth(difficulty);
@@ -199,11 +210,11 @@ const CheckersBoard = () => {
           const [score, newBoard] = minimax(currentBoard, depth, isMaximizing, aiColor);
           
           if (newBoard) {
-            game.ai_move(newBoard);
+            gameRef.current!.ai_move(newBoard);
             console.log("AI moved with score:", score);
           } else {
             console.error("AI couldn't find a valid move: Surrending!");
-            game.reset();
+            gameRef.current!.reset();
           }
           fetchBoard();
         } catch (error) {
@@ -219,28 +230,40 @@ const CheckersBoard = () => {
     handleAIMove();
   }, [currentPlayer]);
 
+  // Update other functions to use gameRef.current instead of global game
+  const handlePause = () => {
+    gameRef.current?.pause();
+    setpauseModal(true);
+  };
+
+  const handleResume = () => {
+    gameRef.current?.resume();
+    setpauseModal(false);
+  };
+
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.safeContainer}>
         <View style={styles.background}>
           <View style={[styles.iconContainer, { top: hp(2), left: wp(2) }]}>
-            <Pressable onPress={() => setpauseModal(true)}> 
+            <Pressable onPress={handlePause}> 
               <Ionicons name="pause-circle-outline" size={hp(6)} color="black"/>
             </Pressable>      
           </View>
-            <Modal isOpen={pauseModal}>
-              <View>
-                <Text style={styles.modalText}>Pause</Text>
-                <View style={{
-                  flexDirection:'row', 
-                  justifyContent:'space-between', 
-                  gap: wp(1),
-                  }}>
+          <Modal isOpen={pauseModal}>
+            <View>
+              <Text style={styles.modalText}>Pause</Text>
+              <View style={{
+                flexDirection:'row', 
+                justifyContent:'space-between', 
+                gap: wp(4),
+              }}>
                 <Pressable
                   style={[styles.button, styles.buttonResume]}
                   onPress={() => {
-                    require('expo-router').router.push('/');
+                    gameRef.current!.reset();
                     setpauseModal(false);
+                    require('expo-router').router.push('/');
                   }}
                 >
                   <Text style={styles.textStyle}>MENU</Text>
@@ -249,20 +272,20 @@ const CheckersBoard = () => {
                   style={[styles.button, styles.buttonResume]}
                   onPress={() => {
                     handleReset();
-                    setpauseModal(false);
+                    handleResume();
                   }}
                 >
                   <MaterialIcons name="restart-alt" size={24} color="black" />
                 </Pressable>
                 <Pressable
                   style={[styles.button, styles.buttonClose]}
-                  onPress={() => setpauseModal(false)}
+                  onPress={handleResume}
                 >
                   <Ionicons name="play-outline" size={24} color="black" />
                 </Pressable>
-                </View>
               </View>
-            </Modal>
+            </View>
+          </Modal>
           <View style={[styles.userOutline, { marginTop: hp(5), top: hp(5), left: wp(5) }]}>
             <View style={styles.user}>
               <Text style={styles.userInfo}>
@@ -289,7 +312,12 @@ const CheckersBoard = () => {
               <Text style={styles.modalText}>Winner is {winner}!</Text>
               <Pressable
                 style={[styles.button, styles.buttonClose]}
-                onPress={() => setwinModal(false)}
+                onPress={() => 
+                {
+                  gameRef.current!.reset();
+                  setwinModal(false);
+                  require('expo-router').router.push('/');
+                }}
               >
                 <Text style={styles.textStyle}>CLOSE</Text>
               </Pressable>

@@ -27,27 +27,33 @@ export class Game {
   private valid_moves: Record<string, Piece[]>;
   private time_left: TimeLeft;
   private turn_start_time: number;
+  private isPaused: boolean;
 
-  constructor() {
+  constructor(turnDuration: number = 300) {
     this.selected = null;
     this.board = new Board();
     this.turn = "WHITE";
     this.valid_moves = {};
-    this.time_left = { WHITE: 300, BLACK: 300 };
+    this.time_left = { WHITE: turnDuration, BLACK: turnDuration };
     this.turn_start_time = Date.now() / 1000;
+    this.isPaused = false;
   }
 
   winner(): Color | null {
     return this.board.winner();
   }
 
-  reset(): void {
+  reset(turnDuration?: number): void {
     this.selected = null;
     this.board = new Board();
     this.turn = "WHITE";
     this.valid_moves = {};
-    this.time_left = { WHITE: 300, BLACK: 300 };
+    this.time_left = { 
+      WHITE: turnDuration || this.time_left.WHITE, 
+      BLACK: turnDuration || this.time_left.BLACK 
+    };
     this.turn_start_time = Date.now() / 1000;
+    this.isPaused = false;
   }
 
   select(row: number, col: number): boolean {
@@ -82,13 +88,31 @@ export class Game {
     return false;
   }
 
+  pause(): void {
+    if (!this.isPaused) {
+      const now = Date.now() / 1000;
+      const elapsed = now - this.turn_start_time;
+      this.time_left[this.turn] = Math.max(0, this.time_left[this.turn] - Math.floor(elapsed));
+      this.isPaused = true;
+    }
+  }
+
+  resume(): void {
+    if (this.isPaused) {
+      this.turn_start_time = Date.now() / 1000;
+      this.isPaused = false;
+    }
+  }
+
   private change_turn(): void {
     this.valid_moves = {};
-    const now = Date.now() / 1000;
-    const elapsed = now - this.turn_start_time;
-    this.time_left[this.turn] = Math.max(0, this.time_left[this.turn] - Math.floor(elapsed));
-    this.turn = this.turn === 'WHITE' ? 'BLACK' : 'WHITE';
-    this.turn_start_time = now;
+    if (!this.isPaused) {
+      const now = Date.now() / 1000;
+      const elapsed = now - this.turn_start_time;
+      this.time_left[this.turn] = Math.max(0, this.time_left[this.turn] - Math.floor(elapsed));
+      this.turn = this.turn === 'WHITE' ? 'BLACK' : 'WHITE';
+      this.turn_start_time = now;
+    }
   }
 
   ai_move(board: Board): void {

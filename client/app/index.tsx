@@ -21,7 +21,7 @@ const MenuContent = () => {
         href="/multiplayer" 
         asChild
         onPress={() => {
-          setGameSettings('multiplayer', 'WHITE');
+          setGameSettings('multiplayer', 'WHITE', 300);
           console.log('Starting multiplayer game');
         }}
       >
