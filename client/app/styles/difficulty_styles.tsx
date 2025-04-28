@@ -56,6 +56,15 @@ const styles = StyleSheet.create({
       alignContent: 'center',
       justifyContent: 'center',
     },
+    roundButton:{
+        height: hp(10),
+        width: wp(31),
+        borderRadius: 20,
+        backgroundColor: 'rgba(0,0,0,0.75)',
+        padding: 3,
+        alignContent: 'center',
+        justifyContent: 'center',
+    },    
     buttonText:{
       color: 'white',
       fontSize: hp(3.5),

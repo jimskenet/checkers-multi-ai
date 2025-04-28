@@ -27,7 +27,11 @@ export class Game {
   private valid_moves: Record<string, Piece[]>;
   private time_left: TimeLeft;
   private turn_start_time: number;
-  private isPaused: boolean;
+  private _isPaused: boolean;
+
+  public get isPaused(): boolean {
+    return this._isPaused;
+  }
 
   constructor(turnDuration: number = 300) {
     this.selected = null;
@@ -36,7 +40,7 @@ export class Game {
     this.valid_moves = {};
     this.time_left = { WHITE: turnDuration, BLACK: turnDuration };
     this.turn_start_time = Date.now() / 1000;
-    this.isPaused = false;
+    this._isPaused = false;
   }
 
   winner(): Color | null {
@@ -53,7 +57,14 @@ export class Game {
       BLACK: turnDuration || this.time_left.BLACK 
     };
     this.turn_start_time = Date.now() / 1000;
-    this.isPaused = false;
+    this._isPaused = false;
+  }
+
+  clear(): void {
+    this.time_left = { 
+      WHITE: -1, 
+      BLACK: -1
+    };
   }
 
   select(row: number, col: number): boolean {
@@ -89,24 +100,24 @@ export class Game {
   }
 
   pause(): void {
-    if (!this.isPaused) {
+    if (!this._isPaused) {
       const now = Date.now() / 1000;
       const elapsed = now - this.turn_start_time;
       this.time_left[this.turn] = Math.max(0, this.time_left[this.turn] - Math.floor(elapsed));
-      this.isPaused = true;
+      this._isPaused = true;
     }
   }
 
   resume(): void {
-    if (this.isPaused) {
+    if (this._isPaused) {
       this.turn_start_time = Date.now() / 1000;
-      this.isPaused = false;
+      this._isPaused = false;
     }
   }
 
   private change_turn(): void {
     this.valid_moves = {};
-    if (!this.isPaused) {
+    if (!this._isPaused) {
       const now = Date.now() / 1000;
       const elapsed = now - this.turn_start_time;
       this.time_left[this.turn] = Math.max(0, this.time_left[this.turn] - Math.floor(elapsed));

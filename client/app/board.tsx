@@ -49,7 +49,7 @@ const CheckersBoard = () => {
   // Initialize game with selected duration
   useEffect(() => {
     if (!gameRef.current) {
-      (gameRef.current as Game | null) = new Game(turnDuration);
+      (gameRef.current as Game | null) = new Game(turnDuration!);
     } else {
       gameRef.current.reset(turnDuration);
     }
@@ -75,29 +75,43 @@ const CheckersBoard = () => {
   const aiColor = playerColor === "WHITE" ? "BLACK" : "WHITE";  
   
   useEffect(() => { 
-    // Only start the interval if the game is not paused
-    if (!pauseModal) {
-      const interval = setInterval(() => {
+    let interval: NodeJS.Timeout;
+    
+    // Only start timer if not paused
+    if (!pauseModal && gameRef.current && !gameRef.current.isPaused) {
+      interval = setInterval(() => {
         setTimeLeft(prev => {
           const player = currentPlayerRef.current;
           const newTime = { ...prev };
-
+          
           if (newTime[player] > 0) {
             newTime[player] -= 1;
+            console.log(newTime); 
+            if (newTime[player] === 0) {
+              const timeoutWinner = player === 'WHITE' ? 'BLACK' : 'WHITE';
+              setWinner(timeoutWinner);
+              setwinModal(true);
+              if (gameRef.current) {
+                gameRef.current.reset(turnDuration);
+                fetchBoard();
+              }
+            }
           }
-
           return newTime;
         });
       }, 1000);
-
-      // Cleanup interval when component unmounts or modal opens
-      return () => clearInterval(interval);
     }
-  }, [pauseModal]); // Add pauseModal to dependencies
+
+    // Cleanup function
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [pauseModal, currentPlayer]); // Add currentPlayer to dependencies
 
   useEffect(() => {
     if (gameRef.current) {
-      // Reset and initialize game with current settings
       gameRef.current.reset();
       fetchBoard();
       console.log('Initializing board with settings:', {
@@ -106,7 +120,7 @@ const CheckersBoard = () => {
         currentPlayer
       });
     }
-  }, [gameMode, playerColor]); // Dependencies include gameMode and playerColor
+  }, [gameMode, playerColor]);
 
   const fetchBoard = async () => {
     try {
@@ -232,13 +246,19 @@ const CheckersBoard = () => {
 
   // Update other functions to use gameRef.current instead of global game
   const handlePause = () => {
-    gameRef.current?.pause();
-    setpauseModal(true);
+    if (gameRef.current) {
+      gameRef.current.pause();
+      setpauseModal(true);
+    }
   };
 
   const handleResume = () => {
-    gameRef.current?.resume();
-    setpauseModal(false);
+    if (gameRef.current) {
+      gameRef.current.resume();
+      const state = gameRef.current.get_game_state();
+      setTimeLeft(state.time_left); // Sync with game state
+      setpauseModal(false);
+    }
   };
 
   return (
@@ -261,13 +281,14 @@ const CheckersBoard = () => {
                 <Pressable
                   style={[styles.button, styles.buttonResume]}
                   onPress={() => {
-                    gameRef.current!.reset();
+                    gameRef.current!.clear();
                     setpauseModal(false);
                     require('expo-router').router.push('/');
                   }}
                 >
                   <Text style={styles.textStyle}>MENU</Text>
                 </Pressable>
+
                 <Pressable
                   style={[styles.button, styles.buttonResume]}
                   onPress={() => {
@@ -289,7 +310,7 @@ const CheckersBoard = () => {
           <View style={[styles.userOutline, { marginTop: hp(5), top: hp(5), left: wp(5) }]}>
             <View style={styles.user}>
               <Text style={styles.userInfo}>
-                {gameMode === 'singleplayer' ? 'Cheek' : 'John Doe'}
+                {gameMode === 'singleplayer' ? 'Cheek' : 'Player 2'}
               </Text> 
             </View>
           </View>
@@ -358,7 +379,7 @@ const CheckersBoard = () => {
           <View style={[styles.userOutline, { marginBottom: hp(5), bottom: hp(5), right: wp(5) }]}>
             <View style={styles.user}>
               <Text style={styles.userInfo}>
-                You
+                {gameMode === 'singleplayer' ? 'You' : 'Player 1'}
               </Text>
             </View> 
           </View>
