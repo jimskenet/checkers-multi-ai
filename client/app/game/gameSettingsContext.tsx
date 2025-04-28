@@ -30,7 +30,6 @@ export function GameSettingsProvider({ children }: { children: React.ReactNode }
       playerColor: color,
       difficulty: difficulty || settings.difficulty 
     });
-    console.log('Game settings updated:', { mode, color, difficulty });
   };
 
   const resetGameSettings = () => {

@@ -9,10 +9,10 @@ export function minimax(
   position: board,
   depth: number,
   maxPlayer: boolean,
-  aiColor: Color = WHITE // Default for backward compatibility, but should be passed in
+  aiColor: Color = WHITE 
 ): [number, board | null] {
   if (depth === 0 || position.winner() !== null) {
-    return [position.evaluate(), position];
+    return [position.evaluate(aiColor), position];   
   }
 
   const currentPlayerColor = maxPlayer 

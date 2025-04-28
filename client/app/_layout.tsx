@@ -32,12 +32,13 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <GameSettingsProvider>
+        <StatusBar style="light" backgroundColor="#000000"/>
         <Stack>
           <Stack.Screen name="index" options={{title: 'Main Menu', headerShown: false}}/>
-          <Stack.Screen name="board" options={{title: 'Play Now'}}/>
+          <Stack.Screen name="board" options={{title: 'Play Now', headerShown: false}}/>
+          <Stack.Screen name="difficulty" options={{title: 'Difficulty', headerShown: false}}/>
           <Stack.Screen name="+not-found" />
         </Stack>
-        <StatusBar style="auto" />
       </GameSettingsProvider>
     </ThemeProvider>
   );

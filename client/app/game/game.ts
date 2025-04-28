@@ -1,4 +1,3 @@
-import { useRef } from 'react';
 import { Board } from './board';
 import { Piece, Color } from './piece';
 

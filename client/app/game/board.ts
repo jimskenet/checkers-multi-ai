@@ -16,8 +16,18 @@ export class Board {
     this.create_board();
   }
 
-  evaluate(): number {
-    return this.white_left - this.black_left + (this.white_kings * 0.5 - this.black_kings * 0.5);
+  evaluate(aiColor: Color): number {
+    const whitePieces = this.get_all_pieces("WHITE");
+    const blackPieces = this.get_all_pieces("BLACK");
+  
+    // Basic scoring: pieces + kings are worth more
+    let whiteScore = whitePieces.length + (whitePieces.filter(p => p.king).length * 2);
+    let blackScore = blackPieces.length + (blackPieces.filter(p => p.king).length * 2);
+  
+    const rawScore = whiteScore - blackScore;
+  
+    // If AI is white, rawScore is good. If AI is black, flip it.
+    return aiColor === "WHITE" ? rawScore : -rawScore;
   }
 
   move(piece: Piece, row: number, col: number): void {

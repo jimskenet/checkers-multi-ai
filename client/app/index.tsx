@@ -5,24 +5,17 @@ import { useGameSettings } from './game/gameSettingsContext';
 
 const MenuContent = () => {
   const { setGameSettings } = useGameSettings();
-  const randomColor = Math.random() > 0.5 ? 'WHITE' : 'BLACK';
 
   return (
     <View style={styles.container}>
       <Image style={styles.logo} source={require('@/assets/images/logo.png')}/>
       <Text style={styles.title}>CHECKERS</Text>
       
-      <Link
-        href="/difficulty"
-        asChild
-        onPress={() => {
-          console.log('Navigating to difficulty selection');
-        }}
-      > 
-        <Pressable style={styles.button}>
+        <Pressable 
+          style={styles.button} 
+          onPress={() => require('expo-router').router.push('/difficulty')}>
           <Text style={styles.buttonText}>SINGLEPLAYER</Text>
         </Pressable>
-      </Link>
 
       <Link 
         href="/multiplayer" 

@@ -1,7 +1,8 @@
 import { View, Text, Image, Pressable } from 'react-native';
-import { Link } from 'expo-router';
 import styles from './styles/menu_styles';
 import { Difficulty, useGameSettings } from './game/gameSettingsContext';
+import { Ionicons } from '@expo/vector-icons';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 const DifficultyContent = () => {
   const difficulties: Difficulty[] = ['easy', 'medium', 'hard'];
@@ -9,14 +10,17 @@ const DifficultyContent = () => {
 
   const handleDifficultySelect = (difficulty: Difficulty) => {
     const randomColor = Math.random() > 0.5 ? 'WHITE' : 'BLACK';
-    
-    // Update the game settings first
     setGameSettings('singleplayer', randomColor, difficulty);
     console.log(`Starting singleplayer game as: ${randomColor} with difficulty: ${difficulty}`);
   };
 
   return (
     <View style={styles.container}>
+      <View style={styles.iconContainer}>
+        <Pressable onPress={() => require('expo-router').router.push('/')}>
+          <Ionicons name="arrow-back" size={hp(5)} color="black" />
+        </Pressable>
+      </View>
       <Image style={styles.logo} source={require('@/assets/images/logo.png')}/>
       <Text style={styles.title}>SELECT DIFFICULTY</Text>
   
@@ -25,12 +29,8 @@ const DifficultyContent = () => {
           key={difficulty}
           style={styles.button}
           onPress={() => {
-            // First update settings
             handleDifficultySelect(difficulty);
-            // Then navigate using a small delay to allow state to update
             setTimeout(() => {
-              // Use direct navigation if available in your Expo version
-              // For older versions, you might need to use other navigation methods
               require('expo-router').router.push('/board');
             }, 10);
           }}

@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { Platform, StatusBar, StyleSheet } from 'react-native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 const styles = StyleSheet.create({
@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
     },
     title:{
       color: '#33333',
-      fontSize: 42,
+      fontSize: hp(5),
       fontWeight: 'bold',
       fontFamily: 'Baloo',
       textAlign: 'center',
@@ -60,6 +60,12 @@ const styles = StyleSheet.create({
       textAlign: 'center',
       padding: 4,
     },
+    iconContainer: {
+        position: 'absolute',
+        zIndex: 1,
+        top: Platform.OS === 'ios' ? hp(2) : hp(2) + (StatusBar.currentHeight || 0),
+        left: wp(2),
+      },
   })
 
   export default styles;
