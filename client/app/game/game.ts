@@ -33,12 +33,15 @@ export class Game {
     return this._isPaused;
   }
 
-  constructor(turnDuration: number = 300) {
+  constructor(turnDuration: number) {
     this.selected = null;
     this.board = new Board();
     this.turn = "WHITE";
     this.valid_moves = {};
-    this.time_left = { WHITE: turnDuration, BLACK: turnDuration };
+    this.time_left = { 
+      WHITE: turnDuration, 
+      BLACK: turnDuration 
+    };
     this.turn_start_time = Date.now() / 1000;
     this._isPaused = false;
   }
@@ -67,8 +70,11 @@ export class Game {
     this.valid_moves = {};
     this._isPaused = false;
     this.turn_start_time = Date.now() / 1000;
-    // Reset time_left to initial state
-    this.time_left = { WHITE: 300, BLACK: 300 };
+    // Change this line to use the initial turnDuration
+    this.time_left = { 
+        WHITE: this.time_left.WHITE,  // Keep existing time instead of 300
+        BLACK: this.time_left.BLACK 
+    };
   }
 
   select(row: number, col: number): boolean {

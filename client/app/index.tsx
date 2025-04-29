@@ -5,14 +5,10 @@ import styles from './styles/menu_styles';
 import { useGameSettings } from './game/gameSettingsContext';
 
 const MenuContent = () => {
-  const { clearGameSettings, setGameSettings } = useGameSettings();
+  const {setGameSettings } = useGameSettings();
   
-  useEffect(() => {
-    clearGameSettings(); // Clear settings when menu mounts
-  }, []);
-
   const handleSinglePlayerPress = () => {
-    setGameSettings('singleplayer', 'WHITE', 300); // Explicitly cast -1 as TurnDuration
+    setGameSettings('singleplayer', 'WHITE', undefined);
     require('expo-router').router.push('/difficulty');
   };
 

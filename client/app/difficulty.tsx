@@ -24,7 +24,7 @@ const DifficultyContent = () => {
         selectedDuration, 
         gameMode === 'singleplayer' ? selectedDifficulty : 'medium'
       );
-      require('expo-router').router.push('/board');
+      require('expo-router').router.replace('/board');
     }
   };
 

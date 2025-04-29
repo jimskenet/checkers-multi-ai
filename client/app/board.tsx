@@ -57,7 +57,7 @@ const CheckersBoard = () => {
   }, [turnDuration]);
 
   // Update timeLeft state initialization
-  const [timeLeft, setTimeLeft] = useState<{ WHITE: number, BLACK: number }>({ 
+  const [timeLeft, setTimeLeft] = useState<{ WHITE: number | undefined, BLACK: number | undefined }>({ 
     WHITE: turnDuration, 
     BLACK: turnDuration 
   });
@@ -73,42 +73,44 @@ const CheckersBoard = () => {
   currentPlayerRef.current = currentPlayer;
 
   const aiColor = playerColor === "WHITE" ? "BLACK" : "WHITE";  
+
+  // 1. Add a mounted ref
+  const isMounted = useRef(true);
   
+  // 2. Modify the timer effect
   useEffect(() => { 
-    let interval: NodeJS.Timeout;
+    if (!isMounted.current) return;
+    const win = gameRef.current?.get_game_state().winner;
+    let interval: NodeJS.Timeout | null = null;
     
-    // Only start timer if not paused
     if (!pauseModal && gameRef.current && !gameRef.current.isPaused) {
-      interval = setInterval(() => {
-        setTimeLeft(prev => {
-          const player = currentPlayerRef.current;
-          const newTime = { ...prev };
-          
-          if (newTime[player] > 0) {
-            newTime[player] -= 1;
-            console.log(newTime); 
-            if (newTime[player] === 0) {
-              const timeoutWinner = player === 'WHITE' ? 'BLACK' : 'WHITE';
-              setWinner(timeoutWinner);
-              setwinModal(true);
-              if (gameRef.current) {
-                gameRef.current.pause();
-                fetchBoard();
-              }
+        interval = setInterval(() => {
+            if (!isMounted.current) {
+                if (interval) clearInterval(interval);
+                return;
             }
-          }
-          return newTime;
-        });
-      }, 1000);
+            setTimeLeft(prev => {
+                const player = currentPlayerRef.current;
+                const newTime = { ...prev };
+                console.log(newTime);
+                if ((newTime[player] ?? 0) > 0) {
+                    newTime[player] = (newTime[player] ?? 0) - 1;
+                    if (newTime[player] === 0) {
+                        if (interval) clearInterval(interval); 
+                        const timeoutWinner= player === 'WHITE' ? 'BLACK' : 'WHITE';
+                        setWinner(timeoutWinner);
+                        setwinModal(true);
+                    }
+                }
+                return newTime;
+            });
+        }, 1000);
     }
 
-    // Cleanup function
     return () => {
-      if (interval) {
-        clearInterval(interval);
-      }
+        if (interval) clearInterval(interval);
     };
-  }, [pauseModal, currentPlayer]); // Add currentPlayer to dependencies
+}, [pauseModal]);
 
   useEffect(() => {
     if (gameRef.current) {
@@ -131,8 +133,6 @@ const CheckersBoard = () => {
         console.log(`Winner is ${state.winner}!`);
         setWinner(state.winner);
         setwinModal(true);
-        gameRef.current?.reset(turnDuration);
-        fetchBoard();
         return;
       }
   
@@ -227,8 +227,18 @@ const CheckersBoard = () => {
             gameRef.current!.ai_move(newBoard);
             console.log("AI moved with score:", score);
           } else {
-            console.error("AI couldn't find a valid move: Surrending!");
-            gameRef.current!.reset();
+            console.error("AI couldn't find a valid move: Surrendering!");
+            const moveWinner = aiColor === 'WHITE' ? 'BLACK' : 'WHITE';
+            
+            if (gameRef.current) {
+                gameRef.current.pause();
+            }
+            
+            setWinner(moveWinner);
+            setwinModal(true);
+            
+            // Update board state one last time
+            fetchBoard();
           }
           fetchBoard();
         } catch (error) {
@@ -248,8 +258,11 @@ const CheckersBoard = () => {
   const handlePause = () => {
     if (gameRef.current) {
       gameRef.current.pause();
+      // Store current time state
+      const currentState = gameRef.current.get_game_state();
+      setTimeLeft(currentState.time_left);
       setpauseModal(true);
-    }
+  }
   };
 
   const handleResume = () => {
@@ -280,14 +293,34 @@ const CheckersBoard = () => {
     };
   }, []);
 
-  // Modify your menu button press handler
-  const handleMenuPress = () => {
+    useEffect(() => {
+      return () => {
+          isMounted.current = false;
+      };
+  }, []);
+
+  const handleMenuPress = async () => {
+    isMounted.current = false;
+    
     if (gameRef.current) {
-      gameRef.current.clear();
-      gameRef.current = undefined;
+        gameRef.current.pause();
+        gameRef.current = undefined;
     }
+    
     setpauseModal(false);
-    require('expo-router').router.push('/');
+    await require('expo-router').router.push('/');
+  };
+
+  const handleWinPress = async () => {
+    isMounted.current = false;
+    
+    if (gameRef.current) {
+        gameRef.current.pause();
+        gameRef.current = undefined;
+    }
+    
+    setwinModal(false);
+    await require('expo-router').router.push('/');
   };
 
   return (
@@ -347,9 +380,9 @@ const CheckersBoard = () => {
             bottom: currentPlayer === playerColor ? hp(5) : undefined,
             left: currentPlayer === playerColor ? wp(5) : undefined,
           }]}>
-            <View style={styles.timer}>
+            <View style={styles.timer}> 
               <Text style={styles.timerText}>
-              {gameMode === 'singleplayer' && currentPlayer === aiColor ? 'Thinking...' : formatTime(timeLeft[currentPlayer])}
+              {gameMode === 'singleplayer' && currentPlayer === aiColor ? 'Thinking...' : formatTime(timeLeft[currentPlayer] ?? 0)}
               </Text>
             </View>
           </View> 
@@ -360,9 +393,7 @@ const CheckersBoard = () => {
                 style={[styles.button, styles.buttonClose]}
                 onPress={() => 
                 {
-                  gameRef.current!.reset();
-                  setwinModal(false);
-                  require('expo-router').router.push('/');
+                  handleWinPress();
                 }}
               >
                 <Text style={styles.textStyle}>CLOSE</Text>

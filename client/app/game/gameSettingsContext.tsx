@@ -9,11 +9,11 @@ interface GameSettings {
   gameMode: GameMode;
   playerColor: PlayerColor;
   difficulty: Difficulty ;
-  turnDuration: TurnDuration | -1;
+  turnDuration: TurnDuration | undefined;
 }
 
 interface GameSettingsContextType extends GameSettings {
-  setGameSettings: (mode: GameMode, color: PlayerColor, turnDuration: TurnDuration, difficulty?: Difficulty) => void;
+  setGameSettings: (mode: GameMode, color: PlayerColor, turnDuration: TurnDuration | undefined, difficulty?: Difficulty) => void;
   resetGameSettings: () => void;
   clearGameSettings: () => void;
 }
@@ -25,10 +25,10 @@ export function GameSettingsProvider({ children }: { children: React.ReactNode }
     gameMode: 'singleplayer',
     playerColor: 'WHITE',
     difficulty: 'medium',
-    turnDuration: 300
+    turnDuration: undefined
   });
 
-  const updateGameSettings = (mode: GameMode, color: PlayerColor, turnDuration: TurnDuration, difficulty?: Difficulty) => {
+  const updateGameSettings = (mode: GameMode, color: PlayerColor, turnDuration: TurnDuration | undefined, difficulty?: Difficulty) => {
     setSettings({ 
       gameMode: mode, 
       playerColor: color,
@@ -38,11 +38,11 @@ export function GameSettingsProvider({ children }: { children: React.ReactNode }
   };
 
   const resetGameSettings = () => {
-    setSettings({ gameMode: 'singleplayer', playerColor: 'WHITE', turnDuration: 300, difficulty: 'medium' });
+    setSettings({ gameMode: 'singleplayer', playerColor: 'WHITE', turnDuration: undefined, difficulty: 'medium' });
   };
 
   const clearGameSettings = () => {
-    setSettings({ gameMode: 'singleplayer', playerColor: 'WHITE', turnDuration: -1, difficulty: 'medium' });
+    setSettings({ gameMode: 'singleplayer', playerColor: 'WHITE', turnDuration: undefined, difficulty: 'medium' });
   };
   
   return (
