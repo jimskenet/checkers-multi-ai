@@ -1,4 +1,4 @@
-import { View, Text, Image, Pressable, SafeAreaView } from 'react-native';
+import { View, Text, Image, Pressable, SafeAreaView, ImageBackground } from 'react-native';
 import styles, { DARK_BROWN, LIGHT_BROWN } from './styles/difficulty_styles';
 import { Difficulty, TurnDuration, useGameSettings } from './game/gameSettingsContext';
 import { Ionicons } from '@expo/vector-icons';
@@ -31,7 +31,10 @@ const DifficultyContent = () => {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.safeContainer}>
-        <View style={styles.container}>
+        <ImageBackground
+          source={require('@/assets/images/checker-bg.jpg')}
+          style={styles.container}>
+          <View style={styles.overlay} />
           <View style={styles.iconContainer}>
             <Pressable onPress={() => require('expo-router').router.push('/')}>
               <Ionicons name="arrow-back" size={hp(5)} color="black" />
@@ -86,7 +89,7 @@ const DifficultyContent = () => {
           >
             <Ionicons name="play-outline" size={hp(5)} color="black"/>
           </Pressable>
-        </View>
+        </ImageBackground>
       </SafeAreaView>
     </SafeAreaProvider>
   );

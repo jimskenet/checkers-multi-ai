@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
   },
   boardOutline: { 
     backgroundColor: "#6C360F",
-    padding: 10,
+    padding: 6,
     borderRadius: 10, 
   },
   board: {
@@ -111,6 +111,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: hp(4),
     fontWeight: 'bold',
+    color: DARK_BROWN,
   },
   button: {
     borderRadius: 20,
@@ -136,6 +137,29 @@ const styles = StyleSheet.create({
     zIndex: 1,
     top: Platform.OS === 'ios' ? hp(2) : hp(2) + (StatusBar.currentHeight || 0),
     left: wp(2),
+  },
+  pause: { 
+    backgroundColor: DARK_BROWN,
+    borderRadius: wp(3),
+    padding: wp(1),
+    height: hp(8),
+    width: wp(50),
+    marginBottom: hp(2),
+    alignSelf: 'center',
+    justifyContent: 'center',
+  },
+  pauseContent: {
+    backgroundColor: '#F6E8B1',
+    borderRadius: wp(2),
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    margin: wp(1),
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#F7D78F',
+    opacity: 0.5,
   },
 });
 

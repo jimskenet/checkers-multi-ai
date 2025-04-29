@@ -1,6 +1,4 @@
-import { View, Text, Image, Pressable } from 'react-native';
-import { Link } from 'expo-router';
-import { useEffect } from 'react';
+import { View, Text, Image, Pressable, ImageBackground } from 'react-native';
 import styles from './styles/menu_styles';
 import { useGameSettings } from './game/gameSettingsContext';
 
@@ -18,22 +16,25 @@ const MenuContent = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Image style={styles.logo} source={require('@/assets/images/logo.png')}/>
-      <Text style={styles.title}>CHECKERS</Text>
+    <ImageBackground
+        source={require('@/assets/images/checker-bg.jpg')}
+        style={styles.container}>
+        <View style={styles.overlay} />
+        <Image style={styles.logo} source={require('@/assets/images/logo.png')}/>
+        <Text style={styles.title}>CHECKERS</Text>
       
-      <Pressable 
-        style={styles.button} 
-        onPress={handleSinglePlayerPress}>
-        <Text style={styles.buttonText}>SINGLEPLAYER</Text>
-      </Pressable>
+        <Pressable 
+          style={styles.button} 
+          onPress={handleSinglePlayerPress}>
+          <Text style={styles.buttonText}>SINGLEPLAYER</Text>
+        </Pressable>
 
-      <Pressable 
-        style={styles.button} 
-        onPress={handleMultiplayerPress}>
-        <Text style={styles.buttonText}>MULTIPLAYER</Text>
-      </Pressable>
-    </View>
+        <Pressable 
+          style={styles.button} 
+          onPress={handleMultiplayerPress}>
+          <Text style={styles.buttonText}>MULTIPLAYER</Text>
+        </Pressable>
+    </ImageBackground>
   );
 };
 

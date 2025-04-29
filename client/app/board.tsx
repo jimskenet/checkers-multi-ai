@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text, TouchableOpacity, Image, Pressable, SafeAreaView } from "react-native";
+import { View, Text, TouchableOpacity, Image, Pressable, SafeAreaView, BackHandler, StatusBar } from "react-native";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import styles, { BOARD_SIZE, WHITE, BLACK, DARK_BROWN, LIGHT_BROWN } from './styles/board_styles';
 import Game from './game/game';
@@ -149,6 +149,27 @@ const CheckersBoard = () => {
     fetchBoard();
   }, []);
 
+
+  const pathname = require('expo-router').usePathname();
+
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (winModal) {
+        return false;
+      }
+      
+      // Only handle back button if we're on the board screen
+      if (pathname === '/board') {
+        setpauseModal(true);
+        return true;
+      }
+      
+      return false;
+    });
+
+    return () => backHandler.remove();
+  }, [winModal, pathname]);
+  
   const handlePress = (row: number, col: number) => { 
     try {
       // Convert visual coordinates to actual board coordinates if playing as WHITE
@@ -308,7 +329,7 @@ const CheckersBoard = () => {
     }
     
     setpauseModal(false);
-    await require('expo-router').router.push('/');
+    await require('expo-router').router.replace('/');
   };
 
   const handleWinPress = async () => {
@@ -334,7 +355,11 @@ const CheckersBoard = () => {
           </View>
           <Modal isOpen={pauseModal}>
             <View>
-              <Text style={styles.modalText}>Pause</Text>
+              <View style={styles.pause}>
+                <View style={styles.pauseContent}>
+                    <Text style={styles.modalText}>PAUSED</Text>
+                </View>
+              </View>
               <View style={{
                 flexDirection:'row', 
                 justifyContent:'space-between', 
@@ -344,7 +369,7 @@ const CheckersBoard = () => {
                   style={[styles.button, styles.buttonResume]}
                   onPress={handleMenuPress}
                 >
-                  <Text style={styles.textStyle}>MENU</Text>
+                  <MaterialIcons name="home" size={24} color="black" />
                 </Pressable>
 
                 <Pressable
@@ -365,7 +390,7 @@ const CheckersBoard = () => {
               </View>
             </View>
           </Modal>
-          <View style={[styles.userOutline, { marginTop: hp(5), top: hp(5), left: wp(5) }]}>
+          <View style={[styles.userOutline, { marginTop: StatusBar.currentHeight! + hp(5), top: hp(5), left: wp(5) }]}>
             <View style={styles.user}>
               <Text style={styles.userInfo}>
                 {gameMode === 'singleplayer' ? 'Cheek' : 'Player 2'}
@@ -373,7 +398,7 @@ const CheckersBoard = () => {
             </View>
           </View>
           <View style={[styles.userOutline, {
-            marginTop: currentPlayer !== playerColor ? hp(5) : undefined,
+            marginTop: currentPlayer !== playerColor ? StatusBar.currentHeight! + hp(5) : undefined,
             top: currentPlayer !== playerColor ? hp(5) : undefined,
             right: currentPlayer !== playerColor ? wp(5) : undefined,
             marginBottom: currentPlayer === playerColor ? hp(5) : undefined,

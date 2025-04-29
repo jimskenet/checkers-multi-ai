@@ -6,7 +6,8 @@ export const LIGHT_BROWN = "#DEB887";
 
 const styles = StyleSheet.create({
     safeContainer:{
-      flex:1
+      flex:1,
+      justifyContent: "center", 
     },
     container: {
       flex: 1,
@@ -67,7 +68,7 @@ const styles = StyleSheet.create({
     },    
     buttonText:{
       color: 'white',
-      fontSize: hp(3.5),
+      fontSize: hp(3),
       fontWeight: 'bold',
       textAlign: 'center',
       padding: 4,
@@ -81,25 +82,30 @@ const styles = StyleSheet.create({
     },
     choices:{
       flexDirection: 'row',
-      justifyContent: 'space-evenly',
-      alignItems: 'center',
+      alignItems: 'center', 
+      justifyContent: 'center',
       marginBottom: hp(15)
     },
     iconContainer: {
-        position: 'absolute',
-        zIndex: 1,
-        top: Platform.OS === 'ios' ? hp(2) : hp(2) + (StatusBar.currentHeight || 0),
-        left: wp(2),
+      position: 'absolute',
+      zIndex: 1,
+      top: Platform.OS === 'ios' ? hp(2) : hp(2) + (StatusBar.currentHeight || 0),
+      left: wp(2),
+    },
+    selectedButton: {
+      opacity: 0.7,
+      borderWidth: 2,
+      borderColor: DARK_BROWN,    
       },
-      selectedButton: {
-        opacity: 0.7,
-        borderWidth: 2,
-        borderColor: DARK_BROWN,
-      },
-      disabledButton: {
-        opacity: 0.5,
-        backgroundColor: LIGHT_BROWN,
-      },
+    disabledButton: {
+      opacity: 0.5,
+      backgroundColor: LIGHT_BROWN,
+    },
+    overlay: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: '#F7D78F',
+      opacity: 0.5,
+    },
   })
 
   export default styles;

@@ -66,6 +66,11 @@ const styles = StyleSheet.create({
         top: Platform.OS === 'ios' ? hp(2) : hp(2) + (StatusBar.currentHeight || 0),
         left: wp(2),
       },
+    overlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: '#F7D78F',
+        opacity: 0.5,
+    },
   })
 
   export default styles;
